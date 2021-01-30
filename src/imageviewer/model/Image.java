@@ -1,5 +1,7 @@
 package imageviewer.model;
+
 public class Image {
+
     private final String name;
 
     public Image(String name) {
@@ -9,5 +11,5 @@ public class Image {
     public String getName() {
         return name;
     }
-    
+
 }

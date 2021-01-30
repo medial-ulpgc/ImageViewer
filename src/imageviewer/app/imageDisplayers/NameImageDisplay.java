@@ -4,15 +4,15 @@ import imageviewer.model.Image;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
-public class NameImageDisplay extends JLabel implements imageviewer.view.ImageDisplay{
+public class NameImageDisplay extends JLabel implements imageviewer.view.ImageDisplay {
+
     private Image image;
     private final JFrame frameToAdjust;
 
     public NameImageDisplay(JFrame frameToAdjust) {
         this.frameToAdjust = frameToAdjust;
     }
-    
-    
+
     @Override
     public void show(Image image) {
         this.image = image;
@@ -24,5 +24,5 @@ public class NameImageDisplay extends JLabel implements imageviewer.view.ImageDi
     public Image image() {
         return this.image;
     }
-    
+
 }

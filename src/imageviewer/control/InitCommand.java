@@ -4,6 +4,7 @@ import imageviewer.model.Image;
 import imageviewer.view.ImageDisplay;
 import imageviewer.view.ImageLoader;
 import java.util.List;
+
 public class InitCommand implements Command {
 
     private final List<Image> images;
@@ -18,10 +19,10 @@ public class InitCommand implements Command {
 
     @Override
     public void execute() {
-        
+
         images.clear();
         images.addAll(imageLoader.load());
-        if(!images.isEmpty()){
+        if (!images.isEmpty()) {
             imageDisplay.show(images.get(0));
         }
     }

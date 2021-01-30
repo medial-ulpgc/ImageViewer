@@ -4,7 +4,7 @@ import imageviewer.model.Image;
 import imageviewer.view.ImageDisplay;
 import java.util.List;
 
-public class ChangeImageCommand implements Command{
+public class ChangeImageCommand implements Command {
 
     private final List<Image> images;
     private final ImageDisplay imageDisplay;
@@ -15,13 +15,13 @@ public class ChangeImageCommand implements Command{
         this.imageDisplay = imageDisplay;
         this.jumpSize = jumpSize;
     }
-    
+
     @Override
     public void execute() {
-        if(!images.isEmpty()){
+        if (!images.isEmpty()) {
             int index = images.indexOf(imageDisplay.image());
-            imageDisplay.show(images.get((images.size() + index + jumpSize % images.size())%images.size()));
+            imageDisplay.show(images.get((images.size() + index + jumpSize % images.size()) % images.size()));
         }
     }
-    
+
 }
