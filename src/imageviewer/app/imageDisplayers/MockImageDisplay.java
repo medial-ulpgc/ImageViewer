@@ -17,4 +17,13 @@ public class MockImageDisplay implements ImageDisplay {
     public Image image() {
         return currentImage;
     }
+
+    @Override
+    public void on(ImageTransition imageTransition) {
+    }
+
+    @Override
+    public void on(ImagePreview imageTransition) {
+        
+    }
 }

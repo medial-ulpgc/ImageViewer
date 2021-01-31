@@ -11,8 +11,8 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.time.Clock;
-import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -23,8 +23,10 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
     private Image image;
 
     private BufferedImage bufferedImage;
-    //private java.awt.Image scaledImage;
+    
     private int offset;
+    private List<ImageDisplay.ImageTransition> imageTransitionListeners = new ArrayList<>();
+    private ImageDisplay.ImagePreview imagePreview = null;
 
     public SwingImageDisplay() {
         MouseHandler mouseHandler = new MouseHandler();
@@ -41,7 +43,10 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
             BufferedImage bufferedImage1 = composeImage(bufferedImage, this.getWidth(), this.getHeight());
             g.drawImage(bufferedImage1, offset, 0, this);
         }
+        
     }
+
+    
 
     private static BufferedImage composeImage(BufferedImage originalImage, int targetWidth, int targetHeigth) {
         int imageWidth = originalImage.getWidth();
@@ -78,6 +83,16 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
     public Image image() {
         return this.image;
     }
+    
+    @Override
+    public void on (ImageTransition imageTransition){
+        this.imageTransitionListeners.add(imageTransition);
+    }
+
+    @Override
+    public void on(ImagePreview imagePreview) {
+        this.imagePreview = imagePreview;
+    }
 
     private class MouseHandler implements MouseListener, MouseMotionListener {
 
@@ -97,6 +112,9 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
 
         @Override
         public void mouseReleased(MouseEvent event) {
+            if(Math.abs( offset) > getWidth()/2){
+                imageTransitionListeners.forEach(offset<0?ImageTransition::previous:ImageTransition::next);
+            }
             initial=0;
             offset=0;
             repaint();

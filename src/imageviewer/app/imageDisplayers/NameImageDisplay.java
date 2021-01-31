@@ -25,4 +25,13 @@ public class NameImageDisplay extends JLabel implements imageviewer.view.ImageDi
         return this.image;
     }
 
+    @Override
+    public void on(ImageTransition imageTransition) {
+    }
+
+    @Override
+    public void on(ImagePreview imageTransition) {
+        
+    }
+
 }
