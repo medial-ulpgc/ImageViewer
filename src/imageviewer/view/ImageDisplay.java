@@ -14,8 +14,8 @@ public interface ImageDisplay {
         public void next();
         public void previous();
     }
-    public void on(ImagePreview imageTransition);
-    interface ImagePreview {
+    public void on(LoadPreview loadPreview);
+    interface LoadPreview {
 
         public Image getNext(Image image);
         public Image getPrevious( Image image);

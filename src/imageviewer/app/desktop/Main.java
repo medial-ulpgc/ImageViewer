@@ -17,14 +17,16 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public final class Main extends JFrame {
+
     Map<String, Command> commands = new HashMap<>();
+
     Main() {
         this.setTitle("Image Viewer");
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setSize(800, 600);
         this.setLocationRelativeTo(null);
         ImageDisplay imageDisplay = imageDisplay();
-        List<Image> images = new ArrayList();
+        List<Image> images = new ArrayList<>();
 
         JPanel jPanel = createCommands(images, imageDisplay);
 
@@ -32,12 +34,23 @@ public final class Main extends JFrame {
         imageDisplay.on(new ImageDisplay.ImageTransition() {
             @Override
             public void next() {
-                commands.getOrDefault(">",NullCommand.instance).execute();
+                commands.getOrDefault(">", NullCommand.instance).execute();
             }
 
             @Override
             public void previous() {
-                commands.getOrDefault("<",NullCommand.instance).execute();
+                commands.getOrDefault("<", NullCommand.instance).execute();
+            }
+        });
+        imageDisplay.on(new ImageDisplay.LoadPreview() {
+            @Override
+            public Image getNext(Image image) {
+                return images.get((1 + images.indexOf(image) + images.size()) % images.size());
+            }
+
+            @Override
+            public Image getPrevious(Image image) {
+                return images.get((-1 + images.indexOf(image) + images.size()) % images.size());
             }
         });
         this.setVisible(true);
@@ -50,7 +63,7 @@ public final class Main extends JFrame {
 
     private Component commandButton(String string) {
         JButton jButton = new JButton(string);
-        jButton.addActionListener((ActionEvent e) -> commands.getOrDefault(string,NullCommand.instance).execute());
+        jButton.addActionListener((ActionEvent e) -> commands.getOrDefault(string, NullCommand.instance).execute());
         jButton.setAlignmentX(TOP_ALIGNMENT);
         return jButton;
     }
@@ -70,13 +83,13 @@ public final class Main extends JFrame {
         commands.put(">>", new ChangeImageCommand(images, imageDisplay, 5));
         commands.put("Load Images", new InitCommand(images, imageDisplay, new FileImageLoader("E:\\testImages")));
         commands.put("Exit", new ExitCommand());
-        
+
         jPanel.add(commandButton("<<"), BorderLayout.CENTER);
         jPanel.add(commandButton("<"), BorderLayout.CENTER);
         jPanel.add(commandButton(">"), BorderLayout.CENTER);
         jPanel.add(commandButton(">>"), BorderLayout.CENTER);
         jPanel.add(commandButton("Load Images"), BorderLayout.CENTER);
-        jPanel.add(commandButton("Exit"),BorderLayout.CENTER);
+        jPanel.add(commandButton("Exit"), BorderLayout.CENTER);
         return jPanel;
     }
 

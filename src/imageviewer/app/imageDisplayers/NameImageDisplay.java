@@ -30,7 +30,7 @@ public class NameImageDisplay extends JLabel implements imageviewer.view.ImageDi
     }
 
     @Override
-    public void on(ImagePreview imageTransition) {
+    public void on(LoadPreview imageTransition) {
         
     }
 

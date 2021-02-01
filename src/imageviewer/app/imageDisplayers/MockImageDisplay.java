@@ -23,7 +23,7 @@ public class MockImageDisplay implements ImageDisplay {
     }
 
     @Override
-    public void on(ImagePreview imageTransition) {
+    public void on(LoadPreview imageTransition) {
         
     }
 }

@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -21,12 +22,14 @@ import javax.swing.JPanel;
 public class SwingImageDisplay extends JPanel implements ImageDisplay {
 
     private Image image;
-
     private BufferedImage bufferedImage;
-    
+
+    private Image previewImage;
+    private BufferedImage previewBufferedImage;
+
     private int offset;
     private List<ImageDisplay.ImageTransition> imageTransitionListeners = new ArrayList<>();
-    private ImageDisplay.ImagePreview imagePreview = null;
+    private ImageDisplay.LoadPreview previewLoader = null;
 
     public SwingImageDisplay() {
         MouseHandler mouseHandler = new MouseHandler();
@@ -39,14 +42,48 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
     public void paint(Graphics g) {
         if (image != null && bufferedImage != null) {
             g.setColor(Color.black);
-            g.fillRect(0,0,this.getWidth(), this.getHeight());
-            BufferedImage bufferedImage1 = composeImage(bufferedImage, this.getWidth(), this.getHeight());
-            g.drawImage(bufferedImage1, offset, 0, this);
+            g.fillRect(0, 0, this.getWidth(), this.getHeight());
+            BufferedImage composedBufferedImage = composeImage(bufferedImage, this.getWidth(), this.getHeight());
+            g.drawImage(composedBufferedImage, offset, 0, null);
+            if (offset != 0 && previewImage != null && previewBufferedImage != null) {
+                 BufferedImage composedBufferedImage2 = composeImage(previewBufferedImage, this.getWidth(), this.getHeight());
+                 int offsetPreview = (offset<0)?offset+getWidth():offset-getWidth();
+                 
+                 g.drawImage(composedBufferedImage2, offsetPreview, 0, null);
+            } 
+            
         }
-        
+
     }
 
-    
+    @Override
+    public void show(Image image) {
+        bufferedImage = loadFromDisk(image);
+        this.image = image;
+        this.repaint();
+    }
+
+    @Override
+    public Image image() {
+        return this.image;
+    }
+
+    @Override
+    public void on(ImageDisplay.ImageTransition imageTransition) {
+        this.imageTransitionListeners.add(imageTransition);
+    }
+
+    @Override
+    public void on(ImageDisplay.LoadPreview previewLoader) {
+        this.previewLoader = previewLoader;
+    }
+
+    private void generatePreview(BiFunction<LoadPreview, Image, Image> previewFetcher) {
+        if (previewLoader != null) {
+            previewImage = previewFetcher.apply(previewLoader, image);
+            previewBufferedImage = loadFromDisk(previewImage);
+        }
+    }
 
     private static BufferedImage composeImage(BufferedImage originalImage, int targetWidth, int targetHeigth) {
         int imageWidth = originalImage.getWidth();
@@ -63,47 +100,20 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
         return result;
     }
 
-    @Override
-    public void show(Image image) {
+    private BufferedImage loadFromDisk(Image image) {
         try {
-            bufferedImage = ImageIO.read(new File(image.getName()));
-
+            return ImageIO.read(new File(image.getName()));
         } catch (IOException ex) {
             Logger.getLogger(SwingImageDisplay.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
             Logger.getLogger(SwingImageDisplay.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        this.image = image;
-        this.repaint();
-
-    }
-
-    @Override
-    public Image image() {
-        return this.image;
-    }
-    
-    @Override
-    public void on (ImageTransition imageTransition){
-        this.imageTransitionListeners.add(imageTransition);
-    }
-
-    @Override
-    public void on(ImagePreview imagePreview) {
-        this.imagePreview = imagePreview;
+        return null;
     }
 
     private class MouseHandler implements MouseListener, MouseMotionListener {
 
         private int initial;
-
-        public MouseHandler() {
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent event) {
-        }
 
         @Override
         public void mousePressed(MouseEvent event) {
@@ -112,12 +122,26 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
 
         @Override
         public void mouseReleased(MouseEvent event) {
-            if(Math.abs( offset) > getWidth()/2){
-                imageTransitionListeners.forEach(offset<0?ImageTransition::previous:ImageTransition::next);
+            if (Math.abs(offset) > getWidth() / 2) {
+                imageTransitionListeners.forEach(offset < 0 ? ImageTransition::next : ImageTransition::previous);
             }
-            initial=0;
-            offset=0;
+            initial = 0;
+            offset = 0;
             repaint();
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent event) {
+            int newOffset = event.getX() - initial;
+            if (newOffset != offset && (offset == 0 || newOffset * offset < 0)) {
+                generatePreview(newOffset < 0 ? LoadPreview::getNext : LoadPreview::getPrevious);
+            }
+            offset = event.getX() - initial;
+            repaint();
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent event) {
         }
 
         @Override
@@ -126,12 +150,6 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
 
         @Override
         public void mouseExited(MouseEvent event) {
-        }
-
-        @Override
-        public void mouseDragged(MouseEvent event) {
-           offset = event.getX()-initial;
-           repaint();
         }
 
         @Override
