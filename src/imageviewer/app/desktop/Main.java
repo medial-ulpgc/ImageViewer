@@ -2,6 +2,7 @@ package imageviewer.app.desktop;
 
 import imageviewer.app.imageLoaders.FileImageLoader;
 import imageviewer.app.imageDisplayers.SwingImageDisplay;
+import imageviewer.app.imageDisplayers.TitleUpdaterImageDisplay;
 import imageviewer.control.*;
 import imageviewer.model.Image;
 import imageviewer.view.ImageDisplay;
@@ -17,13 +18,16 @@ import javax.swing.JPanel;
 public final class Main extends JFrame {
 
     private final ImagePresenter imagePresenter;
+    private static final String DEFAULT_TITLE = "Image Viewer";
 
     Main() {
-        this.setTitle("Image Viewer");
+        this.setTitle(DEFAULT_TITLE);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setSize(800, 600);
         this.setLocationRelativeTo(null);
         ImageDisplay imageDisplay = imageDisplay();
+        imageDisplay = updateTitleImageDisplay(imageDisplay);
+
         List<Image> images = new ArrayList<>();
         this.imagePresenter = new ImagePresenter(images, imageDisplay);
         JPanel jPanel = createCommands(images, imageDisplay);
@@ -47,6 +51,10 @@ public final class Main extends JFrame {
         final SwingImageDisplay imageDisplay = new SwingImageDisplay();
         getContentPane().add(imageDisplay);
         return imageDisplay;
+    }
+
+    private ImageDisplay updateTitleImageDisplay(ImageDisplay imageDisplay) {
+        return new TitleUpdaterImageDisplay(imageDisplay, (imageName) -> this.setTitle(DEFAULT_TITLE + " - " + imageName));
     }
 
     private JPanel createCommands(List<Image> images, final ImageDisplay imageDisplay) {
