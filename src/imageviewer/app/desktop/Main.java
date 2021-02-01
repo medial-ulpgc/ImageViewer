@@ -9,16 +9,14 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public final class Main extends JFrame {
 
-    Map<String, Command> commands = new HashMap<>();
+    private final ImagePresenter imagePresenter;
 
     Main() {
         this.setTitle("Image Viewer");
@@ -27,32 +25,9 @@ public final class Main extends JFrame {
         this.setLocationRelativeTo(null);
         ImageDisplay imageDisplay = imageDisplay();
         List<Image> images = new ArrayList<>();
-
+        this.imagePresenter = new ImagePresenter(images, imageDisplay);
         JPanel jPanel = createCommands(images, imageDisplay);
-
         this.add(jPanel, BorderLayout.SOUTH);
-        imageDisplay.on(new ImageDisplay.ImageTransition() {
-            @Override
-            public void next() {
-                commands.getOrDefault(">", NullCommand.instance).execute();
-            }
-
-            @Override
-            public void previous() {
-                commands.getOrDefault("<", NullCommand.instance).execute();
-            }
-        });
-        imageDisplay.on(new ImageDisplay.LoadPreview() {
-            @Override
-            public Image getNext(Image image) {
-                return images.get((1 + images.indexOf(image) + images.size()) % images.size());
-            }
-
-            @Override
-            public Image getPrevious(Image image) {
-                return images.get((-1 + images.indexOf(image) + images.size()) % images.size());
-            }
-        });
         this.setVisible(true);
     }
 
@@ -61,9 +36,9 @@ public final class Main extends JFrame {
 
     }
 
-    private Component commandButton(String string) {
+    private Component commandButton(String string, Command command) {
         JButton jButton = new JButton(string);
-        jButton.addActionListener((ActionEvent e) -> commands.getOrDefault(string, NullCommand.instance).execute());
+        jButton.addActionListener((ActionEvent e) -> command.execute());
         jButton.setAlignmentX(TOP_ALIGNMENT);
         return jButton;
     }
@@ -76,20 +51,13 @@ public final class Main extends JFrame {
 
     private JPanel createCommands(List<Image> images, final ImageDisplay imageDisplay) {
         JPanel jPanel = new JPanel();
-        commands.put("<<", new ChangeImageCommand(images, imageDisplay, -5));
-        commands.put("<<", new ChangeImageCommand(images, imageDisplay, -5));
-        commands.put("<", new ChangeImageCommand(images, imageDisplay, -1));
-        commands.put(">", new ChangeImageCommand(images, imageDisplay, 1));
-        commands.put(">>", new ChangeImageCommand(images, imageDisplay, 5));
-        commands.put("Load Images", new InitCommand(images, imageDisplay, new FileImageLoader("E:\\testImages")));
-        commands.put("Exit", new ExitCommand());
 
-        jPanel.add(commandButton("<<"), BorderLayout.CENTER);
-        jPanel.add(commandButton("<"), BorderLayout.CENTER);
-        jPanel.add(commandButton(">"), BorderLayout.CENTER);
-        jPanel.add(commandButton(">>"), BorderLayout.CENTER);
-        jPanel.add(commandButton("Load Images"), BorderLayout.CENTER);
-        jPanel.add(commandButton("Exit"), BorderLayout.CENTER);
+        jPanel.add(commandButton("<<", new ChangeImageCommand(images, imageDisplay, -5)), BorderLayout.CENTER);
+        jPanel.add(commandButton("<", new ChangeImageCommand(images, imageDisplay, -1)), BorderLayout.CENTER);
+        jPanel.add(commandButton(">", new ChangeImageCommand(images, imageDisplay, 1)), BorderLayout.CENTER);
+        jPanel.add(commandButton(">>", new ChangeImageCommand(images, imageDisplay, -5)), BorderLayout.CENTER);
+        jPanel.add(commandButton("Load Images", new InitCommand(images, imageDisplay, new FileImageLoader("E:\\testImages"))), BorderLayout.CENTER);
+        jPanel.add(commandButton("Exit", new ExitCommand()), BorderLayout.CENTER);
         return jPanel;
     }
 
